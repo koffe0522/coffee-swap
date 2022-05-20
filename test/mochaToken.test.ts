@@ -84,34 +84,43 @@ describe("MochaToken", function () {
       const user1Balance = await mochaToken.balanceOf(user1.address);
       const totalSupply = await mochaToken.connect(owner).totalSupply();
 
-      assert(totalSupply.sub(transferAmount).eq(ownerBalance))
-      assert(user1Balance.eq(transferAmount))
+      assert(totalSupply.sub(transferAmount).eq(ownerBalance));
+      assert(user1Balance.eq(transferAmount));
     });
   });
 
   describe("transferFrom test", function () {
-
-
     before(async function () {
       await setUp();
+      await mochaToken.connect(owner).transfer(user2.address, 500);
       await mochaToken
-        .connect(owner)
-        .transfer(user2.address, 500)
-      await mochaToken.connect(user2).approve(user1.address, ethers.BigNumber.from(500))
+        .connect(user2)
+        .approve(user1.address, ethers.BigNumber.from(500));
     });
 
     it("Should revert when transfer amount > allowance", async () => {
       await expect(
-        mochaToken.connect(user1).transferFrom(user2.address, user1.address, ethers.BigNumber.from(501))
+        mochaToken
+          .connect(user1)
+          .transferFrom(
+            user2.address,
+            user1.address,
+            ethers.BigNumber.from(501)
+          )
       ).to.be.revertedWith("Transfer amount exceeds allownace");
-    })
+    });
 
     it("Should pass when transfer amount =< allowance", async () => {
-      const approveAmount = await mochaToken.allowance(user2.address, user1.address);
+      const approveAmount = await mochaToken.allowance(
+        user2.address,
+        user1.address
+      );
 
       assert(
-        await mochaToken.connect(user1).transferFrom(user2.address, user1.address, approveAmount)
-      )
-    })
-  })
+        await mochaToken
+          .connect(user1)
+          .transferFrom(user2.address, user1.address, approveAmount)
+      );
+    });
+  });
 });
