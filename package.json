@@ -10,7 +10,7 @@
     "console": "hardhat console --network localhost",
     "clean": "npx hardhat clean",
     "test": "hardhat test",
-    "format": "prettier --write \"frontend/**/*.ts\" \"contracts/**/*.sol\" \"test/**/*.ts\""
+    "format": "prettier --write \"frontend/**/*.{ts,tsx}\" \"contracts/**/*.sol\" \"test/**/*.ts\""
   },
   "keywords": [],
   "author": "",
