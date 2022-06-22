@@ -1,7 +1,10 @@
 import React from "react";
-import NumberFormat from "react-number-format";
+import NumberFormat, { NumberFormatValues } from "react-number-format";
 
-import TextField, { BaseTextFieldProps } from "@mui/material/TextField";
+import TextField, {
+  BaseTextFieldProps,
+  TextFieldProps,
+} from "@mui/material/TextField";
 
 interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void;
@@ -31,11 +34,11 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<unknown>, CustomProps>(
   }
 );
 
-interface Props extends BaseTextFieldProps {
+type Props = TextFieldProps & {
   startAdornment?: React.ReactNode;
-}
+};
 
-const NumberField = ({ id, startAdornment }: Props) => {
+const NumberField = ({ id, startAdornment, value, onChange }: Props) => {
   return (
     <TextField
       id={id}
@@ -46,6 +49,12 @@ const NumberField = ({ id, startAdornment }: Props) => {
         startAdornment,
         inputComponent: NumberFormatCustom as any,
       }}
+      onChange={(v) => {
+        if (onChange) {
+          onChange(v);
+        }
+      }}
+      value={value}
     />
   );
 };

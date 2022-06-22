@@ -1,9 +1,12 @@
+import { MetaMeskProvider } from "hooks/MetaMask/Provider";
 import SwapPage from "./pages/swap";
 
 function App() {
   return (
     <div className="App">
-      <SwapPage />
+      <MetaMeskProvider>
+        <SwapPage />
+      </MetaMeskProvider>
     </div>
   );
 }

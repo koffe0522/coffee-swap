@@ -8,8 +8,25 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
 import Image from "components/atoms/Image";
+import { useMetaMesk } from "hooks/MetaMask/useMetaMask";
 
 const Header = () => {
+  const { account, connect } = useMetaMesk({
+    chainId: process.env.REACT_APP_CHAIN_ID,
+    tokenAddress: process.env.REACT_APP_TOKEN_ADDRESS,
+  });
+
+  const handleConnectWallet = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    try {
+      connect();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -53,9 +70,20 @@ const Header = () => {
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Connect Wallet">
-              <Button variant="contained" color="primary" type="button">
-                Connect Wallet
-              </Button>
+              {account ? (
+                <Button variant="contained" color="primary" type="button">
+                  {account}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="button"
+                  onClick={handleConnectWallet}
+                >
+                  Connect Wallet
+                </Button>
+              )}
             </Tooltip>
             <Menu
               sx={{ mt: "45px" }}

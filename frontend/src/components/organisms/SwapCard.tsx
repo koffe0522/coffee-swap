@@ -7,9 +7,44 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 
 import TokenInput from "components/moleclus/TokenInput";
-import React from "react";
+import React, { useState } from "react";
 
-const SwapCard = () => {
+interface Props {
+  toInputData: {
+    balance: number;
+  };
+  fromInputData: {
+    balance: number;
+    tokenRate: number;
+  };
+  buyToken?: (form: number, to: number) => void;
+}
+
+const SwapCard = (props: Props) => {
+  const [inputToken, setInputToken] = useState(0.0);
+  const [outputToken, setOutputToken] = useState(0.0);
+
+  const handleBuyToken = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (props.buyToken) {
+      props.buyToken(inputToken, outputToken);
+    }
+  };
+
+  const handleInputToken = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setInputToken(Number(event.target.value));
+    setOutputToken(Number(event.target.value) / props.fromInputData.tokenRate);
+  };
+
+  const handleOutputToken = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setInputToken(Number(event.target.value) * props.fromInputData.tokenRate);
+    setOutputToken(Number(event.target.value));
+  };
+
   return (
     <CardContent>
       <Card
@@ -44,7 +79,9 @@ const SwapCard = () => {
               <TokenInput
                 symbol="ETH"
                 src={`${process.env.PUBLIC_URL}/ethereum-eth-logo.svg`}
-                id="swap-from"
+                balance={props.fromInputData.balance}
+                onChange={handleInputToken}
+                value={inputToken}
               />
 
               <Box textAlign="center">
@@ -55,7 +92,9 @@ const SwapCard = () => {
               <TokenInput
                 symbol="MOCHA"
                 src={`${process.env.PUBLIC_URL}/mocha-logo.svg`}
-                id="swap-to"
+                balance={props.toInputData.balance}
+                onChange={handleOutputToken}
+                value={outputToken}
               />
 
               <Box mt={4}>
@@ -64,6 +103,7 @@ const SwapCard = () => {
                   color="primary"
                   type="submit"
                   fullWidth
+                  onClick={handleBuyToken}
                 >
                   SWAP
                 </Button>

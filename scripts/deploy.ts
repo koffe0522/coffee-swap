@@ -4,6 +4,7 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
+const toWei = ethers.utils.parseEther;
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -14,12 +15,25 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
+  const mochaTokenTotalSupply = toWei("1")
   const MochaFactory = await ethers.getContractFactory("Mocha")
-  const mochaToken = await MochaFactory.deploy(ethers.BigNumber.from(10 ** 4))
+  const mochaToken = await MochaFactory.deploy(mochaTokenTotalSupply)
 
   await mochaToken.deployed();
 
   console.log("MochaToken deployed to:", mochaToken.address);
+  const res = await mochaToken.balanceOf(mochaToken.address)
+  console.log("MochaToken this contract balance:", res.toString());
+
+  const DexFactory = await ethers.getContractFactory("Dex")
+
+  const dex = await DexFactory.deploy([mochaToken.address])
+  await dex.deployed();
+  console.log("dex deployed to:", dex.address);
+
+  const result = await mochaToken.transfer(dex.address, mochaTokenTotalSupply)
+  console.log("transaction:", result);
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
