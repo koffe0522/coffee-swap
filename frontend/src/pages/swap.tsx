@@ -5,6 +5,7 @@ import Layout from "layouts/Default";
 import SwapCard from "components/organisms/SwapCard";
 
 import { useMetaMesk } from "hooks/MetaMask/useMetaMask";
+import { useDex } from "hooks/useDex";
 
 export default function SwapPage() {
   const { account, balance, getBalance, tokenBalance, getBalanceOf } =
@@ -13,9 +14,10 @@ export default function SwapPage() {
       tokenAddress: process.env.REACT_APP_TOKEN_ADDRESS,
     });
   const [tokenRate, setTokenRate] = useState(0);
+  const { buyToken } = useDex();
 
   const handleBuyToken = (from: number, to: number) => {
-
+    buyToken(process.env.REACT_APP_TOKEN_ADDRESS || "", from, to);
   };
 
   useEffect(() => {

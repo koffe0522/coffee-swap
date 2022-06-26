@@ -15,25 +15,23 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const mochaTokenTotalSupply = toWei("1")
   const MochaFactory = await ethers.getContractFactory("Mocha")
-  const mochaToken = await MochaFactory.deploy(mochaTokenTotalSupply)
+  const mochaToken = await MochaFactory.deploy()
+
+  const ExchangeFactory = await ethers.getContractFactory("Exchange")
+  const exchange = await ExchangeFactory.deploy([mochaToken.address])
 
   await mochaToken.deployed();
+  await exchange.deployed();
 
   console.log("MochaToken deployed to:", mochaToken.address);
-  const res = await mochaToken.balanceOf(mochaToken.address)
-  console.log("MochaToken this contract balance:", res.toString());
+  console.log("Exchange deployed to:", exchange.address);
 
-  const DexFactory = await ethers.getContractFactory("Dex")
 
-  const dex = await DexFactory.deploy([mochaToken.address])
-  await dex.deployed();
-  console.log("dex deployed to:", dex.address);
+  const totalSupply = await mochaToken.totalSupply();
 
-  const result = await mochaToken.transfer(dex.address, mochaTokenTotalSupply)
+  const result = await mochaToken.transfer(exchange.address, totalSupply)
   console.log("transaction:", result);
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -3,13 +3,15 @@ import { ethers } from "ethers";
 import { MetaMeskStateContext, MetaMeskDispatchContext } from "./Provider";
 import { ActionType } from "./reducer";
 
+import EIP20 from "abi/EIP20.json";
+
 export const useMetaMesk = (config?: {
   chainId?: string | number;
   tokenAddress?: string;
 }) => {
   const state = useContext(MetaMeskStateContext);
   const dispatch = useContext(MetaMeskDispatchContext);
-  const provider = new ethers.providers.JsonRpcProvider();
+  const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
   const [balance, setBalance] = useState(0.0);
   const [tokenBalance, setTokenBalance] = useState(0.0);
 
@@ -42,27 +44,35 @@ export const useMetaMesk = (config?: {
     });
   };
 
-  const getBalance = () => {
-    provider.getBalance(state.account).then((balance) => {
-      setBalance(Number(ethers.utils.formatEther(balance)));
-    });
+  const getBalance = async () => {
+    const balance = await provider?.getBalance(state.account)
+    if (!balance) {
+      return
+    }
+    setBalance(Number(ethers.utils.formatEther(balance)));
   };
 
-  const getBalanceOf = (tokenAddress: string) => {
-    provider.getBalance(tokenAddress).then((balance) => {
-      setTokenBalance(Number(ethers.utils.formatEther(balance)));
-    });
+  const getBalanceOf = async (tokenAddress: string) => {
+    const erc20Token = new ethers.Contract(
+      tokenAddress,
+      EIP20.abi,
+      provider?.getSigner()
+    );
+
+    const { balance } = await erc20Token.functions.balanceOf(state.account);
+    setTokenBalance(Number(ethers.utils.formatEther(balance)));
   };
 
-  //Created check function to see if the MetaMask extension is installed
   const isMetaMaskInstalled = () => {
-    //Have to check the ethereum binding on the window object to see if it's installed
     return Boolean(window.ethereum && window.ethereum.isMetaMask);
   };
 
   useEffect(() => {
     if (isMetaMaskInstalled()) {
       console.log("MetaMask is installed!");
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(provider);
 
       window.ethereum
         .request({ method: "eth_accounts" })
