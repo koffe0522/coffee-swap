@@ -4,9 +4,9 @@ import Image from "components/atoms/Image";
 import NumberField from "components/atoms/NumberField";
 import React from "react";
 import Typography from "@mui/material/Typography";
-import { Grid } from "@mui/material";
+import { Grid, TextFieldProps } from "@mui/material";
 
-interface Props {
+type Props = {
   symbol: string;
   src: string;
   balance: number;
@@ -14,32 +14,33 @@ interface Props {
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
-}
+} & TextFieldProps
 
-const TokenInput = (props: Props) => {
+const TokenInput = ({ symbol, src, balance, value, onChange, ...other }: Props) => {
   return (
     <>
       <Grid container justifyContent="space-between" alignItems="center">
         <Typography variant="overline" component="p">
-          {props.symbol.toUpperCase()}
+          {symbol.toUpperCase()}
         </Typography>
         <Typography variant="body2" component="p">
-          balance: {props.balance.toLocaleString()}
+          balance: {balance.toLocaleString()}
         </Typography>
       </Grid>
       <NumberField
+        {...other}
         startAdornment={
           <InputAdornment position="start">
             <Image
-              src={props.src}
+              src={src}
               alt="logo"
               loading="lazy"
               sx={{ display: { md: "flex" }, width: 12 }}
             />
           </InputAdornment>
         }
-        value={props.value}
-        onChange={props.onChange}
+        value={value}
+        onChange={onChange}
       />
     </>
   );

@@ -1,8 +1,7 @@
 import React from "react";
-import NumberFormat, { NumberFormatValues } from "react-number-format";
+import NumberFormat from "react-number-format";
 
 import TextField, {
-  BaseTextFieldProps,
   TextFieldProps,
 } from "@mui/material/TextField";
 
@@ -38,9 +37,10 @@ type Props = TextFieldProps & {
   startAdornment?: React.ReactNode;
 };
 
-const NumberField = ({ id, startAdornment, value, onChange }: Props) => {
+const NumberField = ({ id, startAdornment, value, onChange, ...other }: Props) => {
   return (
     <TextField
+      {...other}
       id={id}
       variant="outlined"
       fullWidth

@@ -1,26 +1,47 @@
 import { ethers } from "ethers";
-// import Dex from "../abi/Dex.json"
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 import Exchange from "../abi/Exchange.json";
 
-const exchangeAddress = process.env.REACT_APP_EXCHANGE_ADDRESS || "";
+const EXCHANGE_ADDRESS = process.env.REACT_APP_EXCHANGE_ADDRESS || "";
+
+type TokenData = {
+  rate: number;
+  symbol: string;
+  src: string;
+}
 
 export const useDex = () => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const exchangeContract = new ethers.Contract(
+    EXCHANGE_ADDRESS,
+    Exchange.abi,
+    signer
+  );
+
+  const [supportedTokenList, setSupportedTokenList] = useState<TokenData[]>([])
+
+  const fetchSupportToken = async () => {
+    const { data } = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=dai&vs_currencies=eth")
+    if (data["dai"]["eth"]) {
+      setSupportedTokenList([{
+        symbol: "ETH",
+        src: "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png",
+        rate: 1,
+      }, {
+        symbol: "MOCHA",
+        src: `${process.env.PUBLIC_URL}/mocha-logo.svg`,
+        rate: data["dai"]["eth"],
+      }])
+    }
+  }
+
   const buyToken = async (address: string, payment: number, amount: number) => {
-    if (!exchangeAddress) {
+    if (!EXCHANGE_ADDRESS) {
       return;
     }
-
-    console.info(
-      `tokenAddress: ${address}, payment: ${payment}, amount: ${amount}`
-    );
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const exchangeContract = new ethers.Contract(
-      exchangeAddress,
-      Exchange.abi,
-      signer
-    );
 
     try {
       const result = await exchangeContract.functions.buyToken(
@@ -38,5 +59,9 @@ export const useDex = () => {
     }
   };
 
-  return { buyToken };
+  useEffect(() => {
+    fetchSupportToken()
+  }, [])
+
+  return { supportedTokenList, buyToken };
 };
