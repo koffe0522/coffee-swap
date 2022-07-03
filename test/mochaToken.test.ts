@@ -10,11 +10,9 @@ describe("MochaToken", function () {
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
 
-  const TOTAL_SUPPLY = ethers.BigNumber.from(10 ** 4);
-
   const setUp = async () => {
     const MochaFactory = await ethers.getContractFactory("Mocha");
-    mochaToken = await MochaFactory.deploy(TOTAL_SUPPLY);
+    mochaToken = await MochaFactory.deploy();
 
     const accounts = await ethers.getSigners();
     owner = accounts[0];
@@ -41,17 +39,12 @@ describe("MochaToken", function () {
       await setUp();
     });
 
-    it("Should have correct total supply", async () => {
-      const totalSupply = await mochaToken.totalSupply();
-
-      assert(totalSupply.eq(TOTAL_SUPPLY));
-    });
-
     it("Should have correct initial balances", async () => {
+      const totalSupply = await mochaToken.totalSupply()
       const ownerBalance = await mochaToken.balanceOf(owner.address);
       const user1Balance = await mochaToken.balanceOf(user1.address);
 
-      assert(ownerBalance.eq(TOTAL_SUPPLY));
+      assert(ownerBalance.eq(totalSupply));
       assert(user1Balance.eq(0));
     });
   });
@@ -61,16 +54,6 @@ describe("MochaToken", function () {
 
     before(async function () {
       await setUp();
-    });
-
-    it("Should revert when transfer amount > balance", async () => {
-      const ownerBalance = await mochaToken.balanceOf(owner.address);
-
-      await expect(
-        mochaToken
-          .connect(owner)
-          .transfer(user1.address, ownerBalance.add(transferAmount))
-      ).to.be.revertedWith("Insufficient balance");
     });
 
     it("Should pass when transfer amount <= balance", async () => {
@@ -96,18 +79,6 @@ describe("MochaToken", function () {
       await mochaToken
         .connect(user2)
         .approve(user1.address, ethers.BigNumber.from(500));
-    });
-
-    it("Should revert when transfer amount > allowance", async () => {
-      await expect(
-        mochaToken
-          .connect(user1)
-          .transferFrom(
-            user2.address,
-            user1.address,
-            ethers.BigNumber.from(501)
-          )
-      ).to.be.revertedWith("Transfer amount exceeds allownace");
     });
 
     it("Should pass when transfer amount =< allowance", async () => {
