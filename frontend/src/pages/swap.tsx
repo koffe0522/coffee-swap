@@ -25,9 +25,13 @@ export default function SwapPage() {
     to: initTokenData,
     from: initTokenData
   });
-  const { supportedTokenList, buyToken } = useDex();
+  const { supportedTokenList, buyToken, sellToken } = useDex();
 
   const handleBuyToken = () => {
+    if (tokenInputs.to.symbol === "ETH") {
+      sellToken(process.env.REACT_APP_TOKEN_ADDRESS || "", tokenInputs.from.input, tokenInputs.to.input)
+      return
+    }
     buyToken(process.env.REACT_APP_TOKEN_ADDRESS || "", tokenInputs.from.input, tokenInputs.to.input);
   };
 

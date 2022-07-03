@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+import "hardhat/console.sol";
+
 contract Exchange {
     receive() external payable {}
 
@@ -31,25 +33,39 @@ contract Exchange {
         emit Buy(msg.sender, _tokenAddr, _amount);
     }
 
-    function sellToken(address _tokenAddr, uint256 _amount) public payable {
+    function sellToken(
+        address _tokenAddr,
+        uint256 _cost,
+        uint256 _amount
+    ) public payable {
         require(supportedTokenAddress[_tokenAddr], "not support token");
         IERC20 token = IERC20(_tokenAddr);
+        console.log(
+            "sender: %s, balance: %s, cost: %s",
+            msg.sender,
+            token.balanceOf(msg.sender),
+            _cost
+        );
         require(
-            token.balanceOf(msg.sender) >= _amount,
+            token.balanceOf(msg.sender) >= _cost,
             "Insufficient token balance"
         );
-        require(
-            address(this).balance >= _amount,
-            "Dex does not have enough funds"
+        console.log(
+            "ETH balance: %s, amount: %s",
+            address(this).balance,
+            _amount
         );
+        require(address(this).balance >= _amount, "Not enough ether");
         // Exchangeコントラクトに指定の量のトークンを送信する
-        token.transferFrom(msg.sender, address(this), _amount);
-        //
-        (
-            bool success, /* bytes memory data */
+        token.transferFrom(msg.sender, address(this), _cost);
 
-        ) = payable(msg.sender).call{value: _amount}("");
-        require(success, "ETH transfer failed");
+        payable(msg.sender).transfer(_amount);
+        //
+        // (
+        //     bool success, /* bytes memory data */
+
+        // ) = payable(msg.sender).call{value: _amount}("");
+        // require(success, "ETH transfer failed");
 
         emit Sell(msg.sender, _tokenAddr, _amount);
     }

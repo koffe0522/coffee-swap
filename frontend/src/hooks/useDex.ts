@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import Exchange from "../abi/Exchange.json";
+import ERC20 from "../abi/EIP20.json";
 
 const EXCHANGE_ADDRESS = process.env.REACT_APP_EXCHANGE_ADDRESS || "";
 
@@ -39,10 +40,6 @@ export const useDex = () => {
   }
 
   const buyToken = async (address: string, payment: number, amount: number) => {
-    if (!EXCHANGE_ADDRESS) {
-      return;
-    }
-
     try {
       const result = await exchangeContract.functions.buyToken(
         address,
@@ -59,9 +56,37 @@ export const useDex = () => {
     }
   };
 
+  const sellToken = async (tokenAddress: string, payment: number, amount: number) => {
+    const erc20Contract = new ethers.Contract(
+      tokenAddress,
+      ERC20.abi,
+      signer
+    );
+
+    try {
+      const user = await signer.getAddress()
+
+      await erc20Contract.functions.approve(EXCHANGE_ADDRESS, ethers.utils.parseEther(payment.toString()))
+      await erc20Contract.functions.allowance(user, EXCHANGE_ADDRESS)
+      await exchangeContract.functions.sellToken(
+        tokenAddress,
+        ethers.utils.parseEther(payment.toString()),
+        ethers.utils.parseEther(amount.toString()),
+        { gasLimit: 100000 }
+      )
+
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.error(e.message);
+      }
+
+      console.error(e);
+    }
+  }
+
   useEffect(() => {
     fetchSupportToken()
   }, [])
 
-  return { supportedTokenList, buyToken };
+  return { supportedTokenList, buyToken, sellToken };
 };
